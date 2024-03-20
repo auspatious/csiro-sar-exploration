@@ -1,5 +1,11 @@
 *.qmd
 sarsen/data
+mosaic_stats/output
+*.tif
+*.aux.xml
+test.csv
+test.db
+test-2017--P1Y.geojson
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

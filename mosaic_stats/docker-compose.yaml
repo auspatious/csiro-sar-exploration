@@ -1,0 +1,10 @@
+---
+services:
+  db:
+    image: postgis/postgis
+    environment:
+      - POSTGRES_DB=odc
+      - POSTGRES_USER=odc
+      - POSTGRES_PASSWORD=odcpass
+    ports:
+      - 5432:5432

@@ -1,0 +1,10 @@
+plugin: s1-mosaic
+product:
+  name: csiro_s1_mosaic
+  short_name: csiro_s1_mosaic
+  version: 0.0.1
+  product_family: tba
+  collections_site: explorer.csiro.easi-eo.solutions
+  region_code_format: "x{x:03d}y{y:03d}"
+max_processing_time: 600
+s3_acl: bucket-owner-full-control
