@@ -1,6 +1,6 @@
 *.qmd
 sarsen/data
-s1_mosaic/output
+s1_geomad/output
 *.tif
 *.aux.xml
 test.csv
