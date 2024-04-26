@@ -1,0 +1,31 @@
+[project]
+name = "s1_geomad"
+dynamic = ["version"]
+authors = [{ name = "Alex Leith", email = "alex@auspatious.com" }]
+description = "A Sentinel-1 mosaic plugin for odc-stats"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "datacube",
+    "odc-stac",
+    "odc-algo @ git+ssh://git@github.com/opendatacube/odc-algo.git@add-rust-geomedian-impl",
+]
+
+[tool.setuptools]
+package-dir = { "s1_geomad" = "s1_geomad" }
+
+[project.urls]
+Homepage = "https://github.com/auspatious/csiro-sar-exploration"
+Issues = "https://github.com/auspatious/csiro-sar-exploration/issues"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "setuptools-git-versioning>=2.0,<3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools-git-versioning]
+enabled = true
