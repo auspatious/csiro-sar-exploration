@@ -1,0 +1,5 @@
+gdal
+rasterio
+
+--no-binary gdal
+--no-binary rasterio

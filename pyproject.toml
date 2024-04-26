@@ -12,8 +12,8 @@ classifiers = [
 ]
 dependencies = [
     "datacube",
-    "odc-stac",
-    "odc-algo @ git+ssh://git@github.com/opendatacube/odc-algo.git@add-rust-geomedian-impl",
+    "odc-stats",
+    "odc-algo @ git+https://github.com/opendatacube/odc-algo.git@add-rust-geomedian-impl",
 ]
 
 [tool.setuptools]
