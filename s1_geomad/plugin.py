@@ -31,11 +31,6 @@ class S1Mosaic(StatsPluginInterface):
     def measurements(self) -> Tuple[str, ...]:
         return tuple(MEASUREMENTS)
 
-    def native_transform(self, xx: xr.Dataset) -> xr.Dataset:
-        """Rename lon,lat to x,y"""
-        xx = xx.rename({"longitude": "x", "latitude": "y"})
-        return xx
-
     def fuser(self, xx: xr.Dataset) -> xr.Dataset:
         """ """
         # Make nodata nan
