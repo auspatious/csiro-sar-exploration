@@ -30,7 +30,7 @@ run_task:
 		--memory-limit="10GB" \
 		--location="file:///Users/alex/git/auspatious/csiro-sar-exploration/mosaic_stats/output" \
 		test.db \
-		"2017--P1Y,+040,+007"
+		"2023--P1Y,40,6"
 
 # Alex suspects that this doesn't work because the input
 # datasets are eo and not eo3!

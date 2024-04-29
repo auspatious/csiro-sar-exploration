@@ -5,15 +5,17 @@ Sentinel-1 mosaic
 from typing import Tuple
 
 import xarray as xr
+from odc.algo import geomedian_with_mads
 from odc.stats.plugins._registry import StatsPluginInterface, register
 
 MEASUREMENTS = [
     "mean_vv",
     "mean_vh",
-    "median_vv",
-    "median_vh",
-    "std_vv",
-    "std_vh",
+    "vv",
+    "vh",
+    "emad",
+    "smad",
+    "bcmad",
     "count",
 ]
 
@@ -38,19 +40,11 @@ class S1Mosaic(StatsPluginInterface):
 
     def reduce(self, xx: xr.Dataset) -> xr.Dataset:
         """ """
-        arrays = []
+        gm = geomedian_with_mads(xx, work_chunks=self.chunks, num_threads=32)
         for band in ["vv", "vh"]:
-            arrays.append(xx[band].median(axis=0).rename(f"median_{band}"))
-            arrays.append(xx[band].mean(axis=0).rename(f"mean_{band}"))
-            arrays.append(xx[band].std(axis=0).rename(f"std_{band}"))
+            gm[f"median_{band}"] = xx[band].mean("time")
 
-        # Add count
-        arrays.append(xx["vv"].count(axis=0).rename("count").astype("int16"))
-
-        # Merge the arrays together into a Dataset with the names we want
-        mosaic = xr.merge(arrays, compat="override")
-
-        return mosaic
+        return gm
 
 
 register("s1-mosaic", S1Mosaic)
