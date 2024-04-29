@@ -1,0 +1,176 @@
+kind: Workflow
+
+metadata:
+  generateName: s1-geomad-
+  namespace: csa-sar-capability-argo
+
+spec:
+  entrypoint: workflow-entrypoint
+  # serviceAccountName: csa-sar-capability-sa-argo
+  podGC:
+    strategy: OnWorkflowSuccess
+    deleteDelayDuration: 600s
+  nodeSelector:
+    nodegroup: data_pipelines
+  tolerations:
+    - key: easi.csiro.au/dedicated
+      operator: Equal
+      effect: NoSchedule
+      value: data_pipelines
+  parallelism: 1
+  arguments:
+    parameters:
+      - name: image-name
+        value: "ghcr.io/auspatious/csiro-sar-exploration" # The Docker image
+      - name: image-tag
+        value: "0.0.0" # The Docker image and code version
+      - name: version
+        value: "0.0.0" # The version of the data product being made
+      - name: output-bucket
+        value: easi-csiro-dc-data-projects # The bucket where the data will be stored
+      - name: output-prefix
+        value: sar # The prefix of the path where the data will be stored
+      - name: temporal-range
+        value: "2023--P1Y"
+      - name: frequency
+        value: "annual"
+      - name: grid
+        value: "au-30"
+      - name: overwrite
+        value: "--no-overwrite" # Can be "--overwrite" or "--no-overwrite"
+  templates:
+    - name: workflow-entrypoint
+      dag:
+        tasks:
+          - name: generate-db
+            template: generate-db
+            arguments:
+              parameters:
+                - name: temporal-range
+                  value: "{{ workflow.parameters.temporal-range }}"
+                - name: frequency
+                  value: "{{ workflow.parameters.frequency }}"
+                - name: grid
+                  value: "{{ workflow.parameters.grid }}"
+                - name: input-product
+                  value: "sentinel1_grd_gamma0_beta"
+
+          - name: fanout-db
+            depends: generate-db.Succeeded
+            template: fanout-db
+            arguments:
+              parameters:
+                - name: temporal-range
+                  value: "{{ workflow.parameters.temporal-range }}"
+
+          - name: process-id
+            depends: fanout-db.Succeeded
+            template: process
+            arguments:
+              parameters:
+                - name: tile-id
+                  value: "{{ item }}"
+            withParam: "{{ tasks.fanout-db.outputs.result }}"
+
+    - name: generate-db
+      inputs:
+        parameters:
+          - name: temporal-range
+          - name: frequency
+          - name: grid
+          - name: input-product
+      outputs:
+        artifacts:
+          - name: db
+            path: /tmp/job.db
+          - name: geojson
+            path: /tmp/job-tiles.geojson
+      container:
+        image: "{{ workflow.parameters.image-name }}:{{ workflow.parameters.image-tag }}"
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: 100Mi
+            cpu: 1.0
+        env:
+          - name: DB_PASSWORD
+            value: "SECRET"
+          - name: DB_HOSTNAME
+            value: "v2-db-easihub-csiro-eks.cluster-ro-cvaedcg0qvwd.ap-southeast-2.rds.amazonaws.com"
+          - name: DB_USERNAME
+            value: "easi_db_user"
+          - name: DB_DATABASE
+            value: "easihub_csiro_db"
+
+        # volumeMounts:
+        #   - name: user-secret-easi-odc-v2
+        #     mountPath: "/root/.user-secret-easi-odc-v2"
+        #     readOnly: true
+        command: ["/bin/bash"]
+        args:
+          - "-c"
+          - |
+            set -e
+
+            cd /tmp
+
+            echo "Preparing DB..."
+            odc-stats save-tasks \
+            --temporal-range="{{inputs.parameters.temporal-range}}" \
+            --frequency="{{inputs.parameters.frequency}}" \
+            --grid="{{inputs.parameters.grid}}" \
+            --input-products={{inputs.parameters.input-product}} \
+            job.db
+
+            echo "Renaming geojson file"
+            json = $(find . -name "*.geojson" -printf '%f\n')
+            mv $json /tmp/job-tiles.geojson
+
+            echo "Done"
+
+    - name: fanout-db
+      arguments:
+        parameters:
+          - name: temporal-range
+        artifacts:
+          - name: geojson
+            path: /tmp/job-tiles.geojson
+      script:
+        image: "{{ workflow.parameters.image-name }}:{{ workflow.parameters.image-tag }}"
+        command: [python]
+        source: |
+          import json
+          import sys
+
+          with open('/tmp/job-tiles.geojson') as f:
+              data = json.load(f)
+
+          temporal = "{{ inputs.parameters.temporal-range }}"
+
+          tiles = []
+          for tile in data['features']:
+              tile = tile['properties']['title']
+              tiles.append(f"{temporal},{tile}")
+
+          json.dump(tiles, sys.stdout)
+
+    - name: process
+      inputs:
+        parameters:
+          - name: tile-id
+      container:
+        image: "{{ workflow.parameters.image-name }}:{{ workflow.parameters.image-tag }}"
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: 200Gi
+            cpu: 12
+          limits:
+            cpu: 16
+            memory: 220Gi
+        command: [bash, -c]
+        args:
+          - |
+            set -xe
+
+            echo "Working on tile: {{ inputs.parameters.tile-id }}"
