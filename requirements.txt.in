@@ -1,6 +1,0 @@
-gdal
-rasterio
-https://github.com/auspatious/datacube-compute/releases/download/0.0.3/datacube_compute-0.0.3-cp310-cp310-linux_x86_64.whl
-
---no-binary gdal
---no-binary rasterio
