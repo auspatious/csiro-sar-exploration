@@ -6,7 +6,7 @@ from typing import Tuple
 
 import numpy as np
 import xarray as xr
-from odc.algo import geomedian_with_mads
+from datacube_compute import geomedian_with_mads
 from odc.stats.plugins._registry import StatsPluginInterface, register
 
 MEASUREMENTS = [
