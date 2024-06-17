@@ -23,9 +23,9 @@ spec:
       - name: image-name
         value: "ghcr.io/auspatious/csiro-sar-exploration" # The Docker image
       - name: image-tag
-        value: "0.0.0" # The Docker image and code version
+        value: "0.0.0-3-g58c5639" # The Docker image and code version
       - name: version
-        value: "0.0.0" # The version of the data product being made
+        value: "0.1.0" # The version of the data product being made
       - name: input-product
         value: "sentinel1_grd_gamma0_beta"
       - name: output-bucket
@@ -80,6 +80,10 @@ spec:
                   value: "{{ workflow.parameters.version }}"
                 - name: temporal-range
                   value: "{{ workflow.parameters.temporal-range }}"
+                - name: output-bucket
+                  value: "{{ workflow.parameters.output-bucket }}"
+                - name: output-path
+                  value: "{{ workflow.parameters.output-path }}"
             withParam: "{{ tasks.fanout-db.outputs.result }}"
 
     - name: generate-db
@@ -195,6 +199,18 @@ spec:
           - name: temporal-range
           - name: output-bucket
           - name: output-path
+          - name: config
+            value: |
+              plugin: s1-mosaic
+              product:
+                name: csiro_s1_mosaic_annual
+                short_name: csiro_s1_mosaic_annual
+                version: {{workflow.parameters.version}}
+                product_family: Sentinel-1
+                collections_site: explorer.csiro.easi-eo.solutions
+                region_code_format: "x{x:03d}y{y:03d}"
+              max_processing_time: 600
+              s3_acl: bucket-owner-full-control
         artifacts:
           - name: db
             path: /tmp/job.db
@@ -221,10 +237,10 @@ spec:
 
             odc-stats run \
               --apply_eodatasets3 \
-              --config="s1_geomad/config.yaml" \
+              --config="{{inputs.parameters.config}}" \
               --resolution="30" \
               --threads="16" \
               --memory-limit="60GB" \
-              --location="{{input.parameters.output-bucket}}/{{input.parameters.output-path}}" \
+              --location="{{inputs.parameters.output-bucket}}/{{inputs.parameters.output-path}}" \
               /tmp/job.db \
               {{ inputs.parameters.tile-id }}

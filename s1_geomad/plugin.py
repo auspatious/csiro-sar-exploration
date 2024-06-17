@@ -1,5 +1,5 @@
 """
-Sentinel-1 mosaic
+Sentinel-1 GeoMAD and other Statistics
 """
 
 from typing import Tuple
@@ -23,7 +23,7 @@ MEASUREMENTS = [
 ]
 
 
-class S1Mosaic(StatsPluginInterface):
+class S1GeoMAD(StatsPluginInterface):
     NAME = "s1_mosaic"
     SHORT_NAME = NAME
     VERSION = "0.0.0"
@@ -54,4 +54,4 @@ class S1Mosaic(StatsPluginInterface):
         return gm
 
 
-register("s1-mosaic", S1Mosaic)
+register("s1-mosaic", S1GeoMAD)
