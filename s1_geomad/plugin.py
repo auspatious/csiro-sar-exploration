@@ -1,12 +1,12 @@
 """
-Sentinel-1 mosaic
+Sentinel-1 GeoMAD and other Statistics
 """
 
 from typing import Tuple
 
 import numpy as np
 import xarray as xr
-from odc.algo import geomedian_with_mads
+from datacube_compute import geomedian_with_mads
 from odc.stats.plugins._registry import StatsPluginInterface, register
 
 MEASUREMENTS = [
@@ -23,7 +23,7 @@ MEASUREMENTS = [
 ]
 
 
-class S1Mosaic(StatsPluginInterface):
+class S1GeoMAD(StatsPluginInterface):
     NAME = "s1_mosaic"
     SHORT_NAME = NAME
     VERSION = "0.0.0"
@@ -54,4 +54,4 @@ class S1Mosaic(StatsPluginInterface):
         return gm
 
 
-register("s1-mosaic", S1Mosaic)
+register("s1-mosaic", S1GeoMAD)
