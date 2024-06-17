@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/{apt,dpkg,cache,log}
 
 RUN pip3 install --upgrade pip setuptools wheel
-ADD requirements.txt.in /tmp/requirements.txt.in
-RUN pip3 install -r /tmp/requirements.txt.in
+ADD requirements.txt /tmp/requirements.txt
+RUN pip3 install -r /tmp/requirements.txt
 
 ADD . /code
 WORKDIR /code
