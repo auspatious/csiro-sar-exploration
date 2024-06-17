@@ -193,6 +193,8 @@ spec:
           - name: tile-id
           - name: version
           - name: temporal-range
+          - name: output-bucket
+          - name: output-path
         artifacts:
           - name: db
             path: /tmp/job.db
@@ -215,9 +217,14 @@ spec:
           - |
             set -xe
 
-            # Get the DB
-            aws s3 cp $OUTPUT/job-{{inputs.parameters.tile-id}}.db /tmp/job.db
-
             echo "Working on tile: {{ inputs.parameters.tile-id }}"
 
-            ls -l /tmp/job.db
+            odc-stats run \
+              --apply_eodatasets3 \
+              --config="s1_geomad/config.yaml" \
+              --resolution="30" \
+              --threads="16" \
+              --memory-limit="60GB" \
+              --location="{{input.parameters.output-bucket}}/{{input.parameters.output-path}}" \
+              /tmp/job.db \
+              {{ inputs.parameters.tile-id }}
