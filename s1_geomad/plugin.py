@@ -4,15 +4,18 @@ Sentinel-1 mosaic
 
 from typing import Tuple
 
+import numpy as np
 import xarray as xr
 from odc.algo import geomedian_with_mads
 from odc.stats.plugins._registry import StatsPluginInterface, register
 
 MEASUREMENTS = [
-    "mean_vv",
-    "mean_vh",
-    "vv",
-    "vh",
+    "vv_mean",
+    "vh_mean",
+    "vv_std",
+    "vh_std",
+    "vv_gm",
+    "vh_gm",
     "emad",
     "smad",
     "bcmad",
@@ -34,15 +37,19 @@ class S1Mosaic(StatsPluginInterface):
         return tuple(MEASUREMENTS)
 
     def fuser(self, xx: xr.Dataset) -> xr.Dataset:
-        """ """
-        # Make nodata nan
-        return xx.where(xx != xx.vv.nodata)
+        # Make sure nodata is nan
+        xx = xx.where(xx != xx.vv.nodata)
+        xx.attrs["nodata"] = np.nan
+        return
 
     def reduce(self, xx: xr.Dataset) -> xr.Dataset:
-        """ """
         gm = geomedian_with_mads(xx, work_chunks=self.chunks, num_threads=32)
         for band in ["vv", "vh"]:
-            gm[f"median_{band}"] = xx[band].mean("time")
+            gm[f"{band}_mean"] = xx[band].mean("time")
+            gm[f"{band}_std"] = xx[band].std("time")
+
+            # Rename bands
+            gm = gm.rename({band: f"{band}_gm"})
 
         return gm
 

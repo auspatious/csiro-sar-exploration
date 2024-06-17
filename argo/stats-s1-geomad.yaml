@@ -6,10 +6,10 @@ metadata:
 
 spec:
   entrypoint: workflow-entrypoint
-  # serviceAccountName: csa-sar-capability-sa-argo
-  podGC:
-    strategy: OnWorkflowSuccess
-    deleteDelayDuration: 600s
+  serviceAccountName: csa-sar-capability-team-sa-argo
+  artifactGC:
+    strategy: OnWorkflowDeletion
+    forceFinalizerRemoval: true
   nodeSelector:
     nodegroup: data_pipelines
   tolerations:
@@ -26,10 +26,12 @@ spec:
         value: "0.0.0" # The Docker image and code version
       - name: version
         value: "0.0.0" # The version of the data product being made
+      - name: input-product
+        value: "sentinel1_grd_gamma0_beta"
       - name: output-bucket
-        value: easi-csiro-dc-data-projects # The bucket where the data will be stored
-      - name: output-prefix
-        value: sar # The prefix of the path where the data will be stored
+        value: easihub-csiro-dc-data-projects # The bucket where the data will be stored
+      - name: output-path
+        value: sar-capability # The prefix of the path where the data will be stored
       - name: temporal-range
         value: "2023--P1Y"
       - name: frequency
@@ -54,6 +56,8 @@ spec:
                   value: "{{ workflow.parameters.grid }}"
                 - name: input-product
                   value: "sentinel1_grd_gamma0_beta"
+                - name: version
+                  value: "{{ workflow.parameters.version }}"
 
           - name: fanout-db
             depends: generate-db.Succeeded
@@ -62,6 +66,8 @@ spec:
               parameters:
                 - name: temporal-range
                   value: "{{ workflow.parameters.temporal-range }}"
+                - name: version
+                  value: "{{ workflow.parameters.version }}"
 
           - name: process-id
             depends: fanout-db.Succeeded
@@ -70,6 +76,10 @@ spec:
               parameters:
                 - name: tile-id
                   value: "{{ item }}"
+                - name: version
+                  value: "{{ workflow.parameters.version }}"
+                - name: temporal-range
+                  value: "{{ workflow.parameters.temporal-range }}"
             withParam: "{{ tasks.fanout-db.outputs.result }}"
 
     - name: generate-db
@@ -79,12 +89,21 @@ spec:
           - name: frequency
           - name: grid
           - name: input-product
+          - name: version
       outputs:
         artifacts:
           - name: db
             path: /tmp/job.db
+            s3:
+              endpoint: s3.amazonaws.com
+              key: "{{workflow.parameters.output-path}}/job-{{inputs.parameters.temporal-range}}.db.tgz"
+              bucket: "{{workflow.parameters.output-bucket}}"
           - name: geojson
             path: /tmp/job-tiles.geojson
+            s3:
+              endpoint: s3.amazonaws.com
+              key: "{{workflow.parameters.output-path}}/job-{{inputs.parameters.temporal-range}}.geojson.tgz"
+              bucket: "{{workflow.parameters.output-bucket}}"
       container:
         image: "{{ workflow.parameters.image-name }}:{{ workflow.parameters.image-tag }}"
         imagePullPolicy: IfNotPresent
@@ -93,24 +112,31 @@ spec:
             memory: 100Mi
             cpu: 1.0
         env:
-          - name: DB_PASSWORD
-            value: "SECRET"
           - name: DB_HOSTNAME
-            value: "v2-db-easihub-csiro-eks.cluster-ro-cvaedcg0qvwd.ap-southeast-2.rds.amazonaws.com"
+            valueFrom:
+              secretKeyRef:
+                name: easi-odc-v2-user-db
+                key: database-reader-endpoint
           - name: DB_USERNAME
-            value: "easi_db_user"
+            valueFrom:
+              secretKeyRef:
+                name: easi-odc-v2-user-db
+                key: easi-db-user-username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: easi-odc-v2-user-db
+                key: easi-db-user-password
           - name: DB_DATABASE
-            value: "easihub_csiro_db"
-
-        # volumeMounts:
-        #   - name: user-secret-easi-odc-v2
-        #     mountPath: "/root/.user-secret-easi-odc-v2"
-        #     readOnly: true
+            valueFrom:
+              secretKeyRef:
+                name: easi-odc-v2-user-db
+                key: database-name
         command: ["/bin/bash"]
         args:
           - "-c"
           - |
-            set -e
+            set -ex
 
             cd /tmp
 
@@ -122,25 +148,32 @@ spec:
             --input-products={{inputs.parameters.input-product}} \
             job.db
 
+            ls -lah
+
             echo "Renaming geojson file"
-            json = $(find . -name "*.geojson" -printf '%f\n')
-            mv $json /tmp/job-tiles.geojson
+            mv job-{{inputs.parameters.temporal-range}}.geojson /tmp/job-tiles.geojson
 
             echo "Done"
 
     - name: fanout-db
-      arguments:
+      inputs:
         parameters:
           - name: temporal-range
+          - name: version
         artifacts:
           - name: geojson
             path: /tmp/job-tiles.geojson
+            s3:
+              endpoint: s3.amazonaws.com
+              key: "{{workflow.parameters.output-path}}/job-{{inputs.parameters.temporal-range}}.geojson.tgz"
+              bucket: "{{workflow.parameters.output-bucket}}"
       script:
         image: "{{ workflow.parameters.image-name }}:{{ workflow.parameters.image-tag }}"
         command: [python]
         source: |
           import json
           import sys
+          import os
 
           with open('/tmp/job-tiles.geojson') as f:
               data = json.load(f)
@@ -158,19 +191,33 @@ spec:
       inputs:
         parameters:
           - name: tile-id
+          - name: version
+          - name: temporal-range
+        artifacts:
+          - name: db
+            path: /tmp/job.db
+            s3:
+              endpoint: s3.amazonaws.com
+              key: "{{workflow.parameters.output-path}}/job-{{inputs.parameters.temporal-range}}.db.tgz"
+              bucket: "{{workflow.parameters.output-bucket}}"
       container:
         image: "{{ workflow.parameters.image-name }}:{{ workflow.parameters.image-tag }}"
         imagePullPolicy: IfNotPresent
         resources:
           requests:
-            memory: 200Gi
-            cpu: 12
+            memory: 50Gi
+            cpu: 6
           limits:
-            cpu: 16
-            memory: 220Gi
+            cpu: 8
+            memory: 60Gi
         command: [bash, -c]
         args:
           - |
             set -xe
 
+            # Get the DB
+            aws s3 cp $OUTPUT/job-{{inputs.parameters.tile-id}}.db /tmp/job.db
+
             echo "Working on tile: {{ inputs.parameters.tile-id }}"
+
+            ls -l /tmp/job.db
