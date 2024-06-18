@@ -29,7 +29,7 @@ run_task_old:
 		--memory-limit="10GB" \
 		--location="file:///Users/alex/git/auspatious/csiro-sar-exploration/mosaic_stats/output" \
 		test.db \
-		"2017--P1Y,40,6"
+		"2017--P1Y,45,16"
 
 # Sample tile x40y07
 run_task:

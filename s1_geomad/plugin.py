@@ -7,6 +7,7 @@ from typing import Tuple
 import numpy as np
 import xarray as xr
 from datacube_compute import geomedian_with_mads
+from odc.algo._masking import _or_fuser
 from odc.stats.plugins._registry import StatsPluginInterface, register
 
 MEASUREMENTS = [
@@ -30,7 +31,14 @@ class S1GeoMAD(StatsPluginInterface):
     VERSION = "0.0.0"
     PRODUCT_FAMILY = "general"
 
-    def __init__(self, **kwargs):
+    def __init__(
+        self,
+        geomad_work_chunks: Tuple[int, int] = (600, 600),
+        geomad_threads: int = 32,
+        **kwargs,
+    ):
+        self.geomad_work_chunks = geomad_work_chunks
+        self.geomad_threads = geomad_threads
         super().__init__(input_bands=["vv", "vh"], **kwargs)
 
     @property
@@ -38,20 +46,24 @@ class S1GeoMAD(StatsPluginInterface):
         return tuple(MEASUREMENTS)
 
     def native_transform(self, xx: xr.Dataset) -> xr.Dataset:
-        print(xx)
-        return super().native_transform(xx)
-
-    def fuser(self, xx: xr.Dataset) -> xr.Dataset:
         # Make sure nodata is nan
         xx = xx.where(xx != xx.vv.nodata)
         xx.attrs["nodata"] = np.nan
-        return
+        for dv in xx.data_vars.values():
+            dv.attrs.pop("nodata", None)
+
+        return xx
+
+    def fuser(self, xx: xr.Dataset) -> xr.Dataset:
+        return _or_fuser(xx)
 
     def reduce(self, xx: xr.Dataset) -> xr.Dataset:
-        gm = geomedian_with_mads(xx, work_chunks=self.chunks, num_threads=32)
+        gm = geomedian_with_mads(
+            xx, work_chunks=self.geomad_work_chunks, num_threads=self.geomad_threads
+        )
         for band in ["vv", "vh"]:
-            gm[f"{band}_mean"] = xx[band].mean("time")
-            gm[f"{band}_std"] = xx[band].std("time")
+            gm[f"{band}_mean"] = xx[band].mean("spec")
+            gm[f"{band}_std"] = xx[band].std("spec")
 
             # Rename bands
             gm = gm.rename({band: f"{band}_gm"})
