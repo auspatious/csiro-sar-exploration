@@ -1,4 +1,4 @@
-plugin: s1-mosaic
+plugin: s1_geomad.plugin.S1GeoMAD
 product:
   name: csiro_s1_mosaic_annual
   short_name: csiro_s1_mosaic_annual
@@ -6,5 +6,11 @@ product:
   product_family: Sentinel-1
   collections_site: explorer.csiro.easi-eo.solutions
   region_code_format: "x{x:03d}y{y:03d}"
+  producer: csiro
+plugin_config:
+  chunks:
+    longitude: 2000
+    latitude: 2000
+  geomad_work_chunks: [600, 600]
 max_processing_time: 600
 s3_acl: bucket-owner-full-control
