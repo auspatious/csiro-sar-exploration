@@ -2,6 +2,7 @@
 Sentinel-1 GeoMAD and other Statistics
 """
 
+from functools import partial
 from typing import Tuple
 
 import numpy as np
@@ -55,7 +56,7 @@ class S1GeoMAD(StatsPluginInterface):
         return xx
 
     def fuser(self, xx: xr.Dataset) -> xr.Dataset:
-        return _xr_fuse(xx, _first_valid_np, nodata=np.nan)
+        return _xr_fuse(xx, partial(_first_valid_np, nodata=np.nan), "")
 
     def reduce(self, xx: xr.Dataset) -> xr.Dataset:
         gm = geomedian_with_mads(
