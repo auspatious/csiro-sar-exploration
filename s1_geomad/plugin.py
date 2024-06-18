@@ -2,13 +2,11 @@
 Sentinel-1 GeoMAD and other Statistics
 """
 
-from functools import partial
 from typing import Tuple
 
 import numpy as np
 import xarray as xr
 from datacube_compute import geomedian_with_mads
-from odc.algo._masking import _first_valid_np, _xr_fuse
 from odc.stats.plugins._registry import StatsPluginInterface, register
 
 MEASUREMENTS = [
@@ -55,8 +53,8 @@ class S1GeoMAD(StatsPluginInterface):
 
         return xx
 
-    def fuser(self, xx: xr.Dataset) -> xr.Dataset:
-        return _xr_fuse(xx, partial(_first_valid_np, nodata=np.nan), "")
+    # def fuser(self, xx: xr.Dataset) -> xr.Dataset:
+    #     return _xr_fuse(xx, partial(_first_valid_np, nodata=np.nan), "")
 
     def reduce(self, xx: xr.Dataset) -> xr.Dataset:
         gm = geomedian_with_mads(

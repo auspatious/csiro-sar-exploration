@@ -23,7 +23,7 @@ spec:
       - name: image-name
         value: "ghcr.io/auspatious/csiro-sar-exploration" # The Docker image
       - name: image-tag
-        value: "0.0.0-6-g31bf063" # The Docker image and code version
+        value: "0.0.0-8-g37f3e75" # The Docker image and code version
       - name: version
         value: "0.1.0" # The version of the data product being made
       - name: input-product
@@ -59,6 +59,8 @@ spec:
           max_processing_time: 600
           s3_acl: bucket-owner-full-control
           aws_unsigned: false
+          overwrite: true
+          resolution: 20
   templates:
     - name: workflow-entrypoint
       dag:
@@ -242,7 +244,6 @@ spec:
             odc-stats run \
               --apply_eodatasets3 \
               --config="{{inputs.parameters.config}}" \
-              --resolution="30" \
               --threads="16" \
               --memory-limit="60GB" \
               --location="s3://{{inputs.parameters.output-bucket}}/{{inputs.parameters.output-path}}/{{workflow.parameters.version}}/" \

@@ -31,7 +31,6 @@ run_task_old:
 		test.db \
 		"2017--P1Y,45,16"
 
-# Sample tile x40y07
 run_task:
 	odc-stats run \
 		--config="config.yaml" \
@@ -39,7 +38,7 @@ run_task:
 		--memory-limit="10GB" \
 		--location="file:///Users/alex/git/auspatious/csiro-sar-exploration/mosaic_stats/output" \
 		job.db \
-		"2023--P1Y,40,6"
+		"2023--P1Y,38,9"
 
 # Alex suspects that this doesn't work because the input
 # datasets are eo and not eo3!
