@@ -23,6 +23,7 @@ MEASUREMENTS = [
 ]
 
 
+# s1_geomad/plugin.S1GeoMAD
 class S1GeoMAD(StatsPluginInterface):
     NAME = "s1_mosaic"
     SHORT_NAME = NAME
