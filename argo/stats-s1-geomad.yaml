@@ -17,7 +17,7 @@ spec:
       operator: Equal
       effect: NoSchedule
       value: data_pipelines
-  parallelism: 1
+  parallelism:
   arguments:
     parameters:
       - name: image-name
@@ -28,16 +28,18 @@ spec:
         value: "0.1.0" # The version of the data product being made
       - name: input-product
         value: "sentinel1_grd_gamma0_beta"
-      - name: output-bucket
-        value: easihub-csiro-dc-data-projects # The bucket where the data will be stored
-      - name: output-path
-        value: sar-capability # The prefix of the path where the data will be stored
       - name: temporal-range
         value: "2023--P1Y"
       - name: frequency
         value: "annual"
       - name: grid
         value: "au-30"
+      - name: output-product-name
+        value: csiro_s1_mosaic_annual
+      - name: output-bucket
+        value: easihub-csiro-dc-data-projects # The bucket where the data will be stored
+      - name: output-path
+        value: sar-capability # The prefix of the path where the data will be stored
       - name: overwrite
         value: "--no-overwrite" # Can be "--overwrite" or "--no-overwrite"
   templates:
@@ -200,12 +202,16 @@ spec:
             value: |
               plugin: s1_geomad.plugin.S1GeoMAD
               product:
-                name: {{workflow.parameters.product-name}}
-                short_name: {{workflow.parameters.product-name}}
+                name: {{workflow.parameters.output-product-name}}
+                short_name: {{workflow.parameters.output-product-name}}
                 version: {{workflow.parameters.version}}
                 product_family: Sentinel-1
                 collections_site: explorer.csiro.easi-eo.solutions
                 region_code_format: "x{x:03d}y{y:03d}"
+              plugin_config:
+                chunks: 
+                  longitude: 2000
+                  latitude: 2000
               max_processing_time: 600
               s3_acl: bucket-owner-full-control
         artifacts:

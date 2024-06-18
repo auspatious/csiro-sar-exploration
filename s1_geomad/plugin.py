@@ -37,6 +37,10 @@ class S1GeoMAD(StatsPluginInterface):
     def measurements(self) -> Tuple[str, ...]:
         return tuple(MEASUREMENTS)
 
+    def native_transform(self, xx: xr.Dataset) -> xr.Dataset:
+        print(xx)
+        return super().native_transform(xx)
+
     def fuser(self, xx: xr.Dataset) -> xr.Dataset:
         # Make sure nodata is nan
         xx = xx.where(xx != xx.vv.nodata)

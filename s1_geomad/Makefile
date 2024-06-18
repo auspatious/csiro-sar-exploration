@@ -22,14 +22,23 @@ save_tasks:
 		test.db
 
 # Sample tile x40y07
-run_task:
+run_task_old:
 	odc-stats run \
-		--config="config.yaml" \
-		--resolution="30" \
+		--config="config_old.yaml" \
 		--threads="16" \
 		--memory-limit="10GB" \
 		--location="file:///Users/alex/git/auspatious/csiro-sar-exploration/mosaic_stats/output" \
 		test.db \
+		"2017--P1Y,40,6"
+
+# Sample tile x40y07
+run_task:
+	odc-stats run \
+		--config="config.yaml" \
+		--threads="16" \
+		--memory-limit="10GB" \
+		--location="file:///Users/alex/git/auspatious/csiro-sar-exploration/mosaic_stats/output" \
+		job.db \
 		"2023--P1Y,40,6"
 
 # Alex suspects that this doesn't work because the input
