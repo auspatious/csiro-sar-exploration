@@ -2,24 +2,14 @@
 Sentinel-1 GeoMAD and other Statistics
 """
 
+from functools import partial
 from typing import Tuple
 
 import xarray as xr
 from datacube_compute import geomedian_with_mads
+from numpy import nan as np_nan
+from odc.algo._masking import _first_valid_np, _xr_fuse
 from odc.stats.plugins._registry import StatsPluginInterface, register
-
-MEASUREMENTS = [
-    "vv_mean",
-    "vh_mean",
-    "vv_std",
-    "vh_std",
-    "vv_gm",
-    "vh_gm",
-    "emad",
-    "smad",
-    "bcmad",
-    "count",
-]
 
 
 # s1_geomad/plugin.S1GeoMAD
@@ -41,19 +31,30 @@ class S1GeoMAD(StatsPluginInterface):
 
     @property
     def measurements(self) -> Tuple[str, ...]:
-        return tuple(MEASUREMENTS)
+        return (
+            "vv_mean",
+            "vh_mean",
+            "vv_std",
+            "vh_std",
+            "vv_gm",
+            "vh_gm",
+            "emad",
+            "smad",
+            "bcmad",
+            "count",
+        )
 
-    # def native_transform(self, xx: xr.Dataset) -> xr.Dataset:
-    #     # Make sure nodata is nan
-    #     xx = xx.where(xx != xx.vv.nodata)
-    #     xx.attrs["nodata"] = np.nan
-    #     for dv in xx.data_vars.values():
-    #         dv.attrs.pop("nodata", None)
+    def native_transform(self, xx: xr.Dataset) -> xr.Dataset:
+        # Make sure nodata is nan
+        xx = xx.where(xx != xx.vv.nodata)
+        xx.attrs["nodata"] = np_nan
+        for dv in xx.data_vars.values():
+            dv.attrs.pop("nodata", None)
 
-    #     return xx
+        return xx
 
-    # def fuser(self, xx: xr.Dataset) -> xr.Dataset:
-    #     return _xr_fuse(xx, partial(_first_valid_np, nodata=np.nan), "")
+    def fuser(self, xx: xr.Dataset) -> xr.Dataset:
+        return _xr_fuse(xx, partial(_first_valid_np, nodata=np_nan), "")
 
     def reduce(self, xx: xr.Dataset) -> xr.Dataset:
         gm = geomedian_with_mads(
