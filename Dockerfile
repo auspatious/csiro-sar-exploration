@@ -1,4 +1,4 @@
-FROM ghcr.io/osgeo/gdal:ubuntu-small-3.8.5
+FROM ghcr.io/osgeo/gdal:ubuntu-full-3.8.5
 
 # Install apt dependencies
 RUN apt-get update && apt-get install -y \
@@ -6,8 +6,6 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     git \
     libpq-dev \
-    rustc \
-    cargo \
     ca-certificates \
     build-essential \
     && apt-get autoclean \
