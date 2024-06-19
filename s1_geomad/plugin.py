@@ -57,6 +57,7 @@ class S1GeoMAD(StatsPluginInterface):
         return _xr_fuse(xx, partial(_first_valid_np, nodata=np_nan), "")
 
     def reduce(self, xx: xr.Dataset) -> xr.Dataset:
+        print("NODATA", xx.attrs.get("nodata", None))
         gm = geomedian_with_mads(
             xx, work_chunks=self.geomad_work_chunks, num_threads=self.geomad_threads
         )
