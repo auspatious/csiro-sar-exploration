@@ -40,6 +40,8 @@ spec:
         value: easihub-csiro-dc-data-projects # The bucket where the data will be stored
       - name: output-path
         value: sar-capability/csiro_s1_mosaic_annual # The prefix of the path where the data will be stored
+      - name: output-resolution
+        value: "30"
       - name: config
         value: |
           plugin: s1_geomad.plugin.S1GeoMAD
