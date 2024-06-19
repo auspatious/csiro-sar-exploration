@@ -44,7 +44,7 @@ class S1GeoMAD(StatsPluginInterface):
             "count",
         )
 
-    def native_transform(self, xx: xr.Dataset) -> xr.Dataset:
+    def native_transform_unused(self, xx: xr.Dataset) -> xr.Dataset:
         # Make sure nodata is nan
         xx = xx.where(xx != xx.vv.nodata)
         xx.attrs["nodata"] = np_nan
@@ -53,7 +53,7 @@ class S1GeoMAD(StatsPluginInterface):
 
         return xx
 
-    def fuser(self, xx: xr.Dataset) -> xr.Dataset:
+    def fuser_unused(self, xx: xr.Dataset) -> xr.Dataset:
         return _xr_fuse(xx, partial(_first_valid_np, nodata=np_nan), "")
 
     def reduce(self, xx: xr.Dataset) -> xr.Dataset:
