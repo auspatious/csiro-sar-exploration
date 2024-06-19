@@ -23,7 +23,7 @@ spec:
       - name: image-name
         value: "ghcr.io/auspatious/csiro-sar-exploration" # The Docker image
       - name: image-tag
-        value: "0.0.0-14-gb9c964b" # The Docker image and code version
+        value: "0.0.0-18-g0165422" # The Docker image and code version
       - name: version
         value: "0.1.0" # The version of the data product being made
       - name: input-product
@@ -57,12 +57,10 @@ spec:
               longitude: 2000
               latitude: 2000
             geomad_work_chunks: [600, 600]
-            group_by: null
           max_processing_time: 600
           s3_acl: bucket-owner-full-control
           aws_unsigned: false
           overwrite: true
-          resolution: 20
   templates:
     - name: workflow-entrypoint
       dag:

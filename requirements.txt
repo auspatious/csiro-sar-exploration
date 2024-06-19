@@ -5,7 +5,7 @@ rasterio
 numpy==1.21.5
 xarray==2023.1.0
 # This is datacube_compute which is a custom build
-https://github.com/auspatious/datacube-compute/releases/download/0.0.4/datacube_compute-0.0.4-cp310-cp310-linux_x86_64.whl
+https://github.com/auspatious/datacube-compute/releases/download/0.0.5/datacube_compute-0.0.5-cp310-cp310-linux_x86_64.whl
 
 --no-binary gdal
 --no-binary rasterio
