@@ -2,8 +2,7 @@ odc-stats  # Installing here so maybe the plugin will register properly
 gdal
 rasterio
 # # Pin some packages
-# numpy==1.26.4
-# dask==2024.1.1
+numpy==1.21.5
 xarray==0.19.0
 # This is datacube_compute which is a custom build
 https://github.com/auspatious/datacube-compute/releases/download/0.0.4/datacube_compute-0.0.4-cp310-cp310-linux_x86_64.whl
