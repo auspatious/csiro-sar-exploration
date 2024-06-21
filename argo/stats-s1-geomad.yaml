@@ -1,7 +1,7 @@
 kind: Workflow
 
 metadata:
-  generateName: s1-geomad-
+  generateName: s1-geomad-annual-
   namespace: csa-sar-capability-argo
 
 spec:
@@ -23,9 +23,9 @@ spec:
       - name: image-name
         value: "ghcr.io/auspatious/csiro-sar-exploration" # The Docker image
       - name: image-tag
-        value: "0.0.0-18-g0165422" # The Docker image and code version
+        value: "0.3.0" # The Docker image and code version
       - name: version
-        value: "0.2.0" # The version of the data product being made
+        value: "0.3.0" # The version of the data product being made
       - name: input-product
         value: "sentinel1_grd_gamma0_beta"
       - name: temporal-range
@@ -57,7 +57,6 @@ spec:
               longitude: 2000
               latitude: 2000
             geomad_work_chunks: [600, 600]
-          max_processing_time: 1200
           s3_acl: bucket-owner-full-control
           aws_unsigned: false
           overwrite: false
@@ -235,11 +234,11 @@ spec:
         imagePullPolicy: IfNotPresent
         resources:
           requests:
-            memory: 50Gi
+            memory: 70Gi
             cpu: 12
           limits:
             cpu: 16
-            memory: 60Gi
+            memory: 80Gi
         command: ["/bin/bash"]
         args:
           - "-c"
@@ -249,7 +248,7 @@ spec:
               --config="{{inputs.parameters.config}}" \
               --threads="16" \
               --resolution="{{inputs.parameters.output-resolution}}" \
-              --memory-limit="60GB" \
+              --memory-limit="80GB" \
               --location="s3://{{inputs.parameters.output-bucket}}/{{inputs.parameters.output-path}}/{{workflow.parameters.version}}/" \
               /tmp/job.db \
               {{ inputs.parameters.tile-id }}

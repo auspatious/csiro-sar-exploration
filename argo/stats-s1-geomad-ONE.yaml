@@ -1,7 +1,7 @@
 kind: Workflow
 
 metadata:
-  generateName: s1-geomad-
+  generateName: s1-geomad-test-
   namespace: csa-sar-capability-argo
 
 spec:
@@ -23,9 +23,9 @@ spec:
       - name: image-name
         value: "ghcr.io/auspatious/csiro-sar-exploration" # The Docker image
       - name: image-tag
-        value: "0.0.0-19-g087711f" # The Docker image and code version
+        value: "0.0.0-20-ge866391" # The Docker image and code version
       - name: version
-        value: "0.3.0" # The version of the data product being made
+        value: "0.2.0" # The version of the data product being made
       - name: input-product
         value: "sentinel1_grd_gamma0_beta"
       - name: temporal-range
