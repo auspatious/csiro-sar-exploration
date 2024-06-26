@@ -74,4 +74,4 @@ measurements:
     aliases: [COUNT]
     units: "1"
     dtype: uint16
-    nodata: 9999
+    nodata: 0

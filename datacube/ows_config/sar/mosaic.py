@@ -134,9 +134,9 @@ style_count = {
 }
 
 # styles tmad
-sdev_scaling = [0.020, 0.18]
-edev_scaling = [6.2, 7.3]
-bcdev_scaling = [0.025, 0.13]
+sdev_scaling = [0.002, 0.016]
+edev_scaling = [0.006, 0.032]
+bcdev_scaling = [0.05, 0.250]
 
 style_tmad_sdev_std = {
     "name": "arcsec_sdev",
