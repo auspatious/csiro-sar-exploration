@@ -1,0 +1,77 @@
+---
+name: csiro_s1_mosaic_annual_20m
+description: Sentinel 1 GRD Gamma0 Annual Mosaic
+metadata_type: eo3
+
+license: CC-BY-4.0
+
+metadata:
+  product:
+    name: csiro_s1_mosaic_annual_20m
+
+storage:
+  crs: EPSG:3577
+  resolution:
+    x: 20
+    y: -20
+
+measurements:
+  - name: "vv_gm"
+    aliases: [VV_GM]
+    units: "1"
+    dtype: float32
+    nodata: .nan
+
+  - name: "vv_mean"
+    aliases: [VV_MEAN]
+    units: "1"
+    dtype: float32
+    nodata: .nan
+
+  - name: "vv_std"
+    aliases: [VV_STD]
+    units: "1"
+    dtype: float32
+    nodata: .nan
+
+  - name: "vh_gm"
+    aliases: [VH_GM]
+    units: "1"
+    dtype: float32
+    nodata: .nan
+
+  - name: "vh_mean"
+    aliases: [VH_MEAN]
+    units: "1"
+    dtype: float32
+    nodata: .nan
+
+  - name: "vh_std"
+    aliases: [VH_STD]
+    units: "1"
+    dtype: float32
+    nodata: .nan
+
+  - name: "emad"
+    aliases: [EMAD]
+    units: "1"
+    dtype: float32
+    nodata: .nan
+
+  - name: "smad"
+    aliases: [SMAD]
+    units: "1"
+    dtype: float32
+    nodata: .nan
+
+  - name: "bcmad"
+    aliases: [BCMAD]
+    units: "1"
+    dtype: float32
+    nodata: .nan
+
+  - name: "count"
+    aliases: [COUNT]
+    units: "1"
+    dtype: uint16
+    nodata: 9999

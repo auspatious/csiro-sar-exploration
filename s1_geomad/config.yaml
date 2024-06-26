@@ -4,7 +4,7 @@ product:
   short_name: csiro_s1_mosaic_annual
   version: 0.1.0
   product_family: Sentinel-1
-  collections_site: explorer.csiro.easi-eo.solutions
+  explorer_path: explorer.csiro.easi-eo.solutions
   region_code_format: "x{x:03d}y{y:03d}"
   producer: csiro
 plugin_config:

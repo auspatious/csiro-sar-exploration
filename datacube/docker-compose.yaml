@@ -1,0 +1,28 @@
+---
+services:
+  db:
+    image: postgis/postgis
+    environment:
+      - POSTGRES_DB=odc
+      - POSTGRES_USER=odc
+      - POSTGRES_PASSWORD=odcpass
+    ports:
+      - 5432:5432
+
+  ows:
+    image: opendatacube/ows:latest
+    volumes:
+      - ./ows_config:/env/config/ows_config
+      - ./csiro_s1_geomad.product-definition.yaml:/env/product_definition.yaml
+    environment:
+      - DB_HOSTNAME=db
+      - DB_USERNAME=odc
+      - DB_PASSWORD=odcpass
+      - DB_DATABASE=odc
+      - PYTHONPATH=/env/config
+      - WMS_CONFIG_PATH=/env/config/ows_config/ows.py
+      - DATACUBE_OWS_CFG=ows_config.ows.ows_cfg
+      - AWS_NO_SIGN_REQUEST=YES
+      - AWS_DEFAULT_REGION=ap-southeast-2
+    ports:
+      - "8000:8000"

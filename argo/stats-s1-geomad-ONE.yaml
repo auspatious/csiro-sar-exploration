@@ -48,7 +48,7 @@ spec:
             short_name: {{workflow.parameters.output-product-name}}
             version: {{workflow.parameters.version}}
             product_family: sentinel-1
-            collections_site: explorer.csiro.easi-eo.solutions
+            explorer_path: explorer.csiro.easi-eo.solutions
             region_code_format: "x{x:03d}y{y:03d}"
           plugin_config:
             chunks:

@@ -7,6 +7,7 @@ test.csv
 test.db
 test-2017--P1Y.geojson
 *.db
+__pycache__
 
 
 # Byte-compiled / optimized / DLL files
