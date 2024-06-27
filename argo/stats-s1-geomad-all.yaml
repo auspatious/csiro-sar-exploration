@@ -28,8 +28,6 @@ spec:
         value: "0.3.0" # The version of the data product being made
       - name: input-product
         value: "sentinel1_grd_gamma0_10m"
-      - name: temporal-range
-        value: "2023--P1Y"
       - name: frequency
         value: "annual"
       - name: grid
@@ -68,8 +66,6 @@ spec:
             template: generate-db
             arguments:
               parameters:
-                - name: temporal-range
-                  value: "{{ workflow.parameters.temporal-range }}"
                 - name: frequency
                   value: "{{ workflow.parameters.frequency }}"
                 - name: grid
@@ -84,8 +80,6 @@ spec:
             template: fanout-db
             arguments:
               parameters:
-                - name: temporal-range
-                  value: "{{ workflow.parameters.temporal-range }}"
                 - name: version
                   value: "{{ workflow.parameters.version }}"
 
@@ -111,7 +105,6 @@ spec:
     - name: generate-db
       inputs:
         parameters:
-          - name: temporal-range
           - name: frequency
           - name: grid
           - name: input-product
@@ -122,13 +115,7 @@ spec:
             path: /tmp/job.db
             s3:
               endpoint: s3.amazonaws.com
-              key: "{{workflow.parameters.output-path}}/{{workflow.parameters.version}}/job-{{inputs.parameters.temporal-range}}.db.tgz"
-              bucket: "{{workflow.parameters.output-bucket}}"
-          - name: geojson
-            path: /tmp/job-tiles.geojson
-            s3:
-              endpoint: s3.amazonaws.com
-              key: "{{workflow.parameters.output-path}}/{{workflow.parameters.version}}/job-{{inputs.parameters.temporal-range}}.geojson.tgz"
+              key: "{{workflow.parameters.output-path}}/{{workflow.parameters.version}}/job.db.tgz"
               bucket: "{{workflow.parameters.output-bucket}}"
       container:
         image: "{{ workflow.parameters.image-name }}:{{ workflow.parameters.image-tag }}"
@@ -168,30 +155,23 @@ spec:
 
             echo "Preparing DB..."
             odc-stats save-tasks \
-            --temporal-range="{{inputs.parameters.temporal-range}}" \
             --frequency="{{inputs.parameters.frequency}}" \
             --grid="{{inputs.parameters.grid}}" \
             --input-products={{inputs.parameters.input-product}} \
             job.db
-
-            ls -lah
-
-            echo "Renaming geojson file"
-            mv job-{{inputs.parameters.temporal-range}}.geojson /tmp/job-tiles.geojson
 
             echo "Done"
 
     - name: fanout-db
       inputs:
         parameters:
-          - name: temporal-range
           - name: version
         artifacts:
-          - name: geojson
-            path: /tmp/job-tiles.geojson
+          - name: db
+            path: /tmp/job.db
             s3:
               endpoint: s3.amazonaws.com
-              key: "{{workflow.parameters.output-path}}/{{workflow.parameters.version}}/job-{{inputs.parameters.temporal-range}}.geojson.tgz"
+              key: "{{workflow.parameters.output-path}}/{{workflow.parameters.version}}/job.db.tgz"
               bucket: "{{workflow.parameters.output-bucket}}"
       script:
         image: "{{ workflow.parameters.image-name }}:{{ workflow.parameters.image-tag }}"
@@ -199,17 +179,15 @@ spec:
         source: |
           import json
           import sys
-          import os
 
-          with open('/tmp/job-tiles.geojson') as f:
-              data = json.load(f)
+          from odc.stats.tasks import TaskReader
 
-          temporal = "{{ inputs.parameters.temporal-range }}"
-
+          reader = TaskReader("/tmp/job.db")
+          tasks = reader.all_tiles
           tiles = []
-          for tile in data['features']:
-              tile = tile['properties']['title']
-              tiles.append(f"{temporal},{tile}")
+
+          for period, ix, iy in tasks:
+            print(f"{period}/{ix:+04d}/{iy:+04d}")
 
           json.dump(tiles, sys.stdout)
 
@@ -227,7 +205,7 @@ spec:
             path: /tmp/job.db
             s3:
               endpoint: s3.amazonaws.com
-              key: "{{workflow.parameters.output-path}}/{{workflow.parameters.version}}/job-{{workflow.parameters.temporal-range}}.db.tgz"
+              key: "{{workflow.parameters.output-path}}/{{workflow.parameters.version}}/job.db.tgz"
               bucket: "{{workflow.parameters.output-bucket}}"
       container:
         image: "{{ workflow.parameters.image-name }}:{{ workflow.parameters.image-tag }}"
