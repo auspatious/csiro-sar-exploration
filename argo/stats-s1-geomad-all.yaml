@@ -27,7 +27,7 @@ spec:
       - name: version
         value: "0.3.0" # The version of the data product being made
       - name: input-product
-        value: "sentinel1_grd_gamma0_10m"
+        value: "sentinel1_grd_gamma0_20m"
       - name: frequency
         value: "annual"
       - name: grid
